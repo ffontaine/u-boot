@@ -89,6 +89,7 @@ static int fit_image_process_hash(void *fit, const char *image_name,
 	return 0;
 }
 
+#ifdef CONFIG_FIT_SIGNATURE
 /**
  * fit_image_write_sig() - write the signature to a FIT
  *
@@ -267,6 +268,7 @@ static int fit_image_process_sig(const char *keydir, void *keydest,
 
 	return 0;
 }
+#endif
 
 /**
  * fit_image_add_verification_data() - calculate/set verig. data for image node
@@ -337,13 +339,16 @@ int fit_image_add_verification_data(const char *keydir, void *keydest,
 			     strlen(FIT_HASH_NODENAME))) {
 			ret = fit_image_process_hash(fit, image_name, noffset,
 						data, size);
-		} else if (IMAGE_ENABLE_SIGN && keydir &&
+		}
+#ifdef CONFIG_FIT_SIGNATURE
+		else if (IMAGE_ENABLE_SIGN && keydir &&
 			   !strncmp(node_name, FIT_SIG_NODENAME,
 				strlen(FIT_SIG_NODENAME))) {
 			ret = fit_image_process_sig(keydir, keydest,
 				fit, image_name, noffset, data, size,
 				comment, require_keys, engine_id, cmdname);
 		}
+#endif
 		if (ret)
 			return ret;
 	}
@@ -508,6 +513,7 @@ err_path:
 	return -ENOENT;
 }
 
+#ifdef CONFIG_FIT_SIGNATURE
 static int fit_config_get_data(void *fit, int conf_noffset, int noffset,
 		struct image_region **regionp, int *region_countp,
 		char **region_propp, int *region_proplen)
@@ -674,6 +680,7 @@ static int fit_config_add_verification_data(const char *keydir, void *keydest,
 
 	return 0;
 }
+#endif
 
 int fit_add_verification_data(const char *keydir, void *keydest, void *fit,
 			      const char *comment, int require_keys,
@@ -706,6 +713,7 @@ int fit_add_verification_data(const char *keydir, void *keydest, void *fit,
 			return ret;
 	}
 
+#ifdef CONFIG_FIT_SIGNATURE
 	/* If there are no keys, we can't sign configurations */
 	if (!IMAGE_ENABLE_SIGN || !keydir)
 		return 0;
@@ -729,6 +737,7 @@ int fit_add_verification_data(const char *keydir, void *keydest, void *fit,
 		if (ret)
 			return ret;
 	}
+#endif
 
 	return 0;
 }
